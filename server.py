@@ -98,45 +98,40 @@ while True:
     print_value('entity body', body)
     # TODO: Put your application logic here!
     # Parse headers and body and perform various actions
-    username = ''
-    password = ''
-    typeAction = body.split('=')
-    if typeAction[0].__eq__('username'):
-        enteredInfo = body.split('&')
-        usernameInfo = enteredInfo[0].split('=')
-        passwordInfo = enteredInfo[1].split('=')
-        username = usernameInfo[1]
-        password = passwordInfo[1]
-
-
-
-
-    # You need to set the variables:
-    # (1) `html_content_to_send` => add the HTML content you'd
-    # like to send to the client.
-    # Right now, we just send the default login page.
-    html_content_to_send = login_page
-    #Case B
-    if (username and not password):
-        html_content_to_send = bad_creds_page
-    #Case B
-    if (password and not username):
-        html_content_to_send = bad_creds_page
-    #Case A
-    if username:
-        if username in passwordsDictionary:
-            if password.__eq__(passwordsDictionary[username]):
-                if username in secretsDictionary:
-                    html_content_to_send = success_page + secretsDictionary[username]
-                else:
-                    html_content_to_send = success_page 
-            else:
+    if headers.startswith('GET'):
+        html_content_to_send = login_page
+    elif headers.startswith('POST'):
+        username = ''
+        password = ''
+        typeAction = body.split('=')
+        if typeAction[0].__eq__('username'):
+            enteredInfo = body.split('&')
+            usernameInfo = enteredInfo[0].split('=')
+            passwordInfo = enteredInfo[1].split('=')
+            username = usernameInfo[1]
+            password = passwordInfo[1]
+            #case B
+            if not username or not password:
                 html_content_to_send = bad_creds_page
-        else: 
-            html_content_to_send = bad_creds_page
-    #Case Logout
-    if typeAction[0].__eq__('action'):
-        html_content_to_send = logout_page
+            #Case A
+            if username in passwordsDictionary:
+                if password.__eq__(passwordsDictionary[username]):
+                    if username in secretsDictionary:
+                        html_content_to_send = success_page + secretsDictionary[username]
+                    else:
+                        html_content_to_send = success_page 
+                else:
+                    html_content_to_send = bad_creds_page
+            else: 
+                html_content_to_send = bad_creds_page
+        # You need to set the variables:
+        # (1) `html_content_to_send` => add the HTML content you'd
+        # like to send to the client.
+        # Right now, we just send the default login page.
+        #html_content_to_send = login_page
+        #Case Logout
+        elif typeAction[0].__eq__('action'):
+            html_content_to_send = logout_page
     # But other possibilities exist, including
     # html_content_to_send = success_page + <secret>
     # html_content_to_send = bad_creds_page
