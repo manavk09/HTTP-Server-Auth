@@ -64,8 +64,25 @@ signal.signal(signal.SIGINT, sigint_handler)
 # TODO: put your application logic here!
 # Read login credentials for all the users
 # Read secret data of all the users
+# Building the passwords db
+passwordsDictionary = {}
+inPasswords = open("passwords.txt", "r+")
+passwords = inPasswords.readlines()
+numUsers = len(passwords)
+for i in range(0,numUsers):
+    curUserPas = passwords[i].split()
+    passwordsDictionary[curUserPas[0]] = curUserPas[1]
+print(passwordsDictionary)
 
-
+# Building the secrets db
+secretsDictionary = {}
+inSecrets = open("secrets.txt", "r+")
+secrets = inSecrets.readlines()
+numSecrets = len(secrets)
+for i in range(0,numSecrets):
+    curSecret = secrets[i].split()
+    secretsDictionary[curSecret[0]] = curSecret[1]
+print(secretsDictionary)
 
 
 ### Loop to accept incoming HTTP connections and respond.
@@ -79,15 +96,47 @@ while True:
     body = '' if len(header_body) == 1 else header_body[1]
     print_value('headers', headers)
     print_value('entity body', body)
-
     # TODO: Put your application logic here!
     # Parse headers and body and perform various actions
+    username = ''
+    password = ''
+    typeAction = body.split('=')
+    if typeAction[0].__eq__('username'):
+        enteredInfo = body.split('&')
+        usernameInfo = enteredInfo[0].split('=')
+        passwordInfo = enteredInfo[1].split('=')
+        username = usernameInfo[1]
+        password = passwordInfo[1]
+
+
+
 
     # You need to set the variables:
     # (1) `html_content_to_send` => add the HTML content you'd
     # like to send to the client.
     # Right now, we just send the default login page.
     html_content_to_send = login_page
+    #Case B
+    if (username and not password):
+        html_content_to_send = bad_creds_page
+    #Case B
+    if (password and not username):
+        html_content_to_send = bad_creds_page
+    #Case A
+    if username:
+        if username in passwordsDictionary:
+            if password.__eq__(passwordsDictionary[username]):
+                if username in secretsDictionary:
+                    html_content_to_send = success_page + secretsDictionary[username]
+                else:
+                    html_content_to_send = success_page 
+            else:
+                html_content_to_send = bad_creds_page
+        else: 
+            html_content_to_send = bad_creds_page
+    #Case Logout
+    if typeAction[0].__eq__('action'):
+        html_content_to_send = logout_page
     # But other possibilities exist, including
     # html_content_to_send = success_page + <secret>
     # html_content_to_send = bad_creds_page
