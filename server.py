@@ -98,6 +98,7 @@ while True:
     print_value('entity body', body)
     # TODO: Put your application logic here!
     # Parse headers and body and perform various actions
+    headers_to_send = ''
     if headers.startswith('GET'):
         html_content_to_send = login_page
     elif headers.startswith('POST'):
@@ -118,6 +119,8 @@ while True:
                 if password.__eq__(passwordsDictionary[username]):
                     if username in secretsDictionary:
                         html_content_to_send = success_page + secretsDictionary[username]
+                        rand_val = random.getrandbits(64)
+                        headers_to_send = 'Set-Cookie: token=' + str(rand_val) + '\r\n'
                     else:
                         html_content_to_send = success_page 
                 else:
@@ -140,7 +143,6 @@ while True:
     # (2) `headers_to_send` => add any additional headers
     # you'd like to send the client?
     # Right now, we don't send any extra headers.
-    headers_to_send = ''
 
     # Construct and send the final response
     response  = 'HTTP/1.1 200 OK\r\n'
