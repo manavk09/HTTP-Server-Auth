@@ -109,15 +109,17 @@ while True:
             headers_to_send = 'Set-Cookie: token=; expires=Thu, 01 Jan 1970 00:00:00 GMT\r\n'
             html_content_to_send = logout_page
         else:
-            splitHeader = headers.split(';')
+            splitHeader = headers.split('\r\n')
             tokenData = splitHeader[len(splitHeader) - 1].split('=')
             cookieToken = tokenData[1]
             print("Cookies dictionary: ", cookiesDictonary)
             print("Cookie token: ", cookieToken)
+            print('token data: ', tokenData[0])
             # Case C - cookie header present and valid
-            if cookieToken in cookiesDictonary:
-                if cookiesDictonary[cookieToken] in secretsDictionary:
-                    html_content_to_send = success_page + secretsDictionary[username]
+            if tokenData[0].startswith('Cookie'):
+                print('im here')
+                if cookieToken in cookiesDictonary:
+                    html_content_to_send = success_page + secretsDictionary[cookiesDictonary[cookieToken]]
                 else:
                     html_content_to_send = bad_creds_page
             else:
