@@ -83,7 +83,7 @@ for i in range(0,numSecrets):
     curSecret = secrets[i].split()
     secretsDictionary[curSecret[0]] = curSecret[1]
 print(secretsDictionary)
-
+cookiesDictonary = {}
 
 ### Loop to accept incoming HTTP connections and respond.
 while True:
@@ -101,40 +101,56 @@ while True:
     headers_to_send = ''
     if headers.startswith('GET'):
         html_content_to_send = login_page
+        cookies = headers
     elif headers.startswith('POST'):
-        username = ''
-        password = ''
+        #Case Logout
         typeAction = body.split('=')
-        if typeAction[0].__eq__('username'):
-            enteredInfo = body.split('&')
-            usernameInfo = enteredInfo[0].split('=')
-            passwordInfo = enteredInfo[1].split('=')
-            username = usernameInfo[1]
-            password = passwordInfo[1]
-            #case B
-            if not username or not password:
-                html_content_to_send = bad_creds_page
-            #Case A
-            if username in passwordsDictionary:
-                if password.__eq__(passwordsDictionary[username]):
-                    if username in secretsDictionary:
-                        html_content_to_send = success_page + secretsDictionary[username]
-                        rand_val = random.getrandbits(64)
-                        headers_to_send = 'Set-Cookie: token=' + str(rand_val) + '\r\n'
-                    else:
-                        html_content_to_send = success_page 
+        if typeAction[0].__eq__('action'):
+            headers_to_send = 'Set-Cookie: token=; expires=Thu, 01 Jan 1970 00:00:00 GMT\r\n'
+            html_content_to_send = logout_page
+        else:
+            splitHeader = headers.split(';')
+            tokenData = splitHeader[len(splitHeader) - 1].split('=')
+            cookieToken = tokenData[1]
+            print("Cookies dictionary: ", cookiesDictonary)
+            print("Cookie token: ", cookieToken)
+            # Case C - cookie header present and valid
+            if cookieToken in cookiesDictonary:
+                if cookiesDictonary[cookieToken] in secretsDictionary:
+                    html_content_to_send = success_page + secretsDictionary[username]
                 else:
                     html_content_to_send = bad_creds_page
-            else: 
-                html_content_to_send = bad_creds_page
-        # You need to set the variables:
-        # (1) `html_content_to_send` => add the HTML content you'd
-        # like to send to the client.
-        # Right now, we just send the default login page.
-        #html_content_to_send = login_page
-        #Case Logout
-        elif typeAction[0].__eq__('action'):
-            html_content_to_send = logout_page
+            else:
+                username = ''
+                password = ''
+                if typeAction[0].__eq__('username'):
+                    enteredInfo = body.split('&')
+                    usernameInfo = enteredInfo[0].split('=')
+                    passwordInfo = enteredInfo[1].split('=')
+                    username = usernameInfo[1]
+                    password = passwordInfo[1]
+                    #case B
+                    if not username or not password:
+                        html_content_to_send = bad_creds_page
+                    #Case A
+                    if username in passwordsDictionary:
+                        if password.__eq__(passwordsDictionary[username]):
+                            if username in secretsDictionary:
+                                html_content_to_send = success_page + secretsDictionary[username]
+                                rand_val = random.getrandbits(64)
+                                cookiesDictonary[str(rand_val)] = username
+                                headers_to_send = 'Set-Cookie: token=' + str(rand_val) + '\r\n'
+                            else:
+                                html_content_to_send = success_page 
+                        else:
+                            html_content_to_send = bad_creds_page
+                    else: 
+                        html_content_to_send = bad_creds_page
+            # You need to set the variables:
+            # (1) `html_content_to_send` => add the HTML content you'd
+            # like to send to the client.
+            # Right now, we just send the default login page.
+            #html_content_to_send = login_page
     # But other possibilities exist, including
     # html_content_to_send = success_page + <secret>
     # html_content_to_send = bad_creds_page
