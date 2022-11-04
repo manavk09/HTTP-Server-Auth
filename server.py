@@ -112,12 +112,8 @@ while True:
             splitHeader = headers.split('\r\n')
             tokenData = splitHeader[len(splitHeader) - 1].split('=')
             cookieToken = tokenData[1]
-            print("Cookies dictionary: ", cookiesDictonary)
-            print("Cookie token: ", cookieToken)
-            print('token data: ', tokenData[0])
             # Case C - cookie header present and valid
             if tokenData[0].startswith('Cookie'):
-                print('im here')
                 if cookieToken in cookiesDictonary:
                     html_content_to_send = success_page + secretsDictionary[cookiesDictonary[cookieToken]]
                 else:
